@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEON DRIFT — Jogo Interativo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --neon-pink: #ff2a6d;
+      --neon-cyan: #05d9e8;
+      --neon-purple: #d300c5;
+      --dark: #0a0a12;
+      --darker: #050508;
+    }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: var(--darker);
+      color: #e0e0ff;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ===== HERO / DIVULGAÇÃO ===== */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      background: 
+        radial-gradient(ellipse at 20% 50%, rgba(255, 42, 109, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(5, 217, 232, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 80%, rgba(211, 0, 197, 0.1) 0%, transparent 50%),
+        var(--darker);
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: 
+        linear-gradient(90deg, transparent 49%, rgba(5, 217, 232, 0.03) 50%, transparent 51%),
+        linear-gradient(0deg, transparent 49%, rgba(255, 42, 109, 0.03) 50%, transparent 51%);
+      background-size: 60px 60px;
+      animation: gridMove 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(60px); }
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2.8rem, 10vw, 5.5rem);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink), var(--neon-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 40px rgba(5, 217, 232, 0.4);
+      margin-bottom: 0.5rem;
+      animation: pulseGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.3); }
+    }
+
+    .tagline {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--neon-cyan);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+    }
+
+    .description {
+      max-width: 560px;
+      font-size: 1.15rem;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      color: #b0b0d0;
+    }
+
+    .btn-play {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      padding: 1rem 3rem;
+      border: 2px solid var(--neon-cyan);
+      background: transparent;
+      color: var(--neon-cyan);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+    }
+
+    .btn-play::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(5, 217, 232, 0.3), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .btn-play:hover {
+      background: rgba(5, 217, 232, 0.15);
+      box-shadow: 0 0 30px rgba(5, 217, 232, 0.5), inset 0 0 20px rgba(5, 217, 232, 0.1);
+      transform: scale(1.05);
+    }
+
+    .btn-play:hover::before {
+      left: 100%;
+    }
+
+    .features {
+      display: flex;
+      gap: 2rem;
+      margin-top: 3rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .feature {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(5, 217, 232, 0.2);
+      padding: 1.2rem 1.8rem;
+      border-radius: 8px;
+      backdrop-filter: blur(10px);
+    }
+
+    .feature strong {
+      display: block;
+      color: var(--neon-pink);
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.3rem;
+    }
+
+    /* ===== ÁREA DO JOGO ===== */
+    #game-section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem;
+      min-height: 100vh;
+      background: var(--darker);
+    }
+
+    .game-header {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .score-box, .best-box {
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+    }
+
+    .score-box span, .best-box span {
+      color: var(--neon-cyan);
+      font-weight: 700;
+    }
+
+    #gameCanvas {
+      background: #050510;
+      border: 2px solid rgba(5, 217, 232, 0.4);
+      border-radius: 4px;
+      box-shadow: 
+        0 0 40px rgba(5, 217, 232, 0.15),
+        inset 0 0 60px rgba(0, 0, 0, 0.8);
+      max-width: 100%;
+      cursor: none;
+    }
+
+    .controls-info {
+      margin-top: 1.2rem;
+      font-size: 0.95rem;
+      color: #8888aa;
+      text-align: center;
+    }
+
+    .controls-info kbd {
+      background: rgba(5, 217, 232, 0.15);
+      border: 1px solid rgba(5, 217, 232, 0.4);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      color: var(--neon-cyan);
+    }
+
+    /* Overlay de Game Over */
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 5, 12, 0.92);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    #overlay h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3rem;
+      color: var(--neon-pink);
+      margin-bottom: 1rem;
+      text-shadow: 0 0 20px rgba(255, 42, 109, 0.6);
+    }
+
+    #overlay p {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    #final-score {
+      color: var(--neon-cyan);
+      font-weight: 700;
+      font-size: 1.8rem;
+    }
+
+    .btn-restart {
+      margin-top: 2rem;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      padding: 0.9rem 2.5rem;
+      border: 2px solid var(--neon-pink);
+      background: transparent;
+      color: var(--neon-pink);
+      cursor: pointer;
+      letter-spacing: 0.1em;
+      transition: all 0.3s;
+    }
+
+    .btn-restart:hover {
+      background: rgba(255, 42, 109, 0.2);
+      box-shadow: 0 0 25px rgba(255, 42, 109, 0.5);
+    }
+
+    .btn-back {
+      margin-top: 1rem;
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.95rem;
+      text-decoration: underline;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.85rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== PÁGINA DE DIVULGAÇÃO ===== -->
+  <section class="hero" id="hero">
+    <h1 class="logo">NEON DRIFT</h1>
+    <p class="tagline">Sobreviva ao túnel infinito</p>
+    <p class="description">
+      Pilote sua nave em um corredor de néon em alta velocidade. 
+      Desvie dos obstáculos geométricos, colete orbs de energia e 
+      veja até onde consegue chegar enquanto o ritmo acelera sem parar.
+    </p>
+    <button class="btn-play" onclick="startGame()">▶ JOGAR AGORA</button>
+
+    <div class="features">
+      <div class="feature">
+        <strong>VELOCIDADE</strong>
+        Progressiva e viciante
+      </div>
+      <div class="feature">
+        <strong>CONTROLES</strong>
+        Teclado ou Toque
+      </div>
+      <div class="feature">
+        <strong>VISUAL</strong>
+        Neon Cyberpunk
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ÁREA DO JOGO ===== -->
+  <section id="game-section">
+    <div class="game-header">
+      <div class="score-box">SCORE: <span id="score">0</span></div>
+      <div class="best-box">RECORDE: <span id="best">0</span></div>
+    </div>
+    <canvas id="gameCanvas" width="800" height="500"></canvas>
+    <p class="controls-info">
+      <kbd>←</kbd> <kbd>→</kbd> ou <kbd>A</kbd> <kbd>D</kbd> para mover • 
+      Toque nas laterais no mobile
+    </p>
+  </section>
+
+  <!-- Overlay Game Over -->
+  <div id="overlay">
+    <h2>GAME OVER</h2>
+    <p>Sua pontuação</p>
+    <p id="final-score">0</p>
+    <button class="btn-restart" onclick="restartGame()">JOGAR NOVAMENTE</button>
+    <button class="btn-back" onclick="backToHome()">Voltar ao início</button>
+  </div>
+
+  <footer>
+    NEON DRIFT — Jogo criado com HTML5 Canvas + JavaScript puro
+  </footer>
+
+  <script>
+    // ===== CONFIGURAÇÃO =====
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const bestEl = document.getElementById('best');
+    const overlay = document.getElementById('overlay');
+    const finalScoreEl = document.getElementById('final-score');
+
+    let bestScore = localStorage.getItem('neonDriftBest') || 0;
+    bestEl.textContent = bestScore;
+
+    // Estado do jogo
+    let gameRunning = false;
+    let score = 0;
+    let speed = 4;
+    let frame = 0;
+
+    // Nave do jogador
+    const player = {
+      x: 400,
+      y: 420,
+      width: 36,
+      height: 28,
+      speed: 7
+    };
+
+    // Arrays de objetos
+    let obstacles = [];
+    let orbs = [];
+    let particles = [];
+    let stars = [];
+
+    // Controles
+    const keys = {};
+    let touchLeft = false;
+    let touchRight = false;
+
+    // ===== EVENTOS =====
+    document.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+      if (['arrowleft','arrowright','a','d'].includes(e.key.toLowerCase())) {
+        e.preventDefault();
+      }
+    });
+    document.addEventListener('keyup', e => {
+      keys[e.key.toLowerCase()] = false;
+    });
+
+    // Touch controls
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+      if (touchX < canvas.width / 2) touchLeft = true;
+      else touchRight = true;
+    });
+    canvas.addEventListener('touchend', () => {
+      touchLeft = false;
+      touchRight = false;
+    });
+    canvas.addEventListener('touchcancel', () => {
+      touchLeft = false;
+      touchRight = false;
+    });
+
+    // ===== FUNÇÕES DO JOGO =====
+    function startGame() {
+      document.getElementById('hero').style.display = 'none';
+      document.getElementById('game-section').style.display = 'flex';
+      resetGame();
+      gameRunning = true;
+      requestAnimationFrame(loop);
+    }
+
+    function resetGame() {
+      score = 0;
+      speed = 4;
+      frame = 0;
+      player.x = canvas.width / 2;
+      obstacles = [];
+      orbs = [];
+      particles = [];
+      scoreEl.textContent = '0';
+      overlay.style.display = 'none';
+      createStars();
+    }
+
+    function restartGame() {
+      resetGame();
+      gameRunning = true;
+      requestAnimationFrame(loop);
+    }
+
+    function backToHome() {
+      gameRunning = false;
+      document.getElementById('game-section').style.display = 'none';
+      document.getElementById('hero').style.display = 'flex';
+      overlay.style.display = 'none';
+    }
+
+    function createStars() {
+      stars = [];
+      for (let i = 0; i < 80; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2 + 0.5,
+          speed: Math.random() * 1.5 + 0.5
+        });
+      }
+    }
+
+    function spawnObstacle() {
+      const laneWidth = canvas.width / 5;
+      const lane = Math.floor(Math.random() * 5);
+      const types = ['rect', 'diamond', 'triangle'];
+      const type = types[Math.floor(Math.random() * types.length)];
+
+      obstacles.push({
+        x: lane * laneWidth + laneWidth / 2,
+        y: -40,
+        size: 28 + Math.random() * 18,
+        type: type,
+        rotation: 0,
+        rotSpeed: (Math.random() - 0.5) * 0.1
+      });
+    }
+
+    function spawnOrb() {
+      orbs.push({
+        x: 60 + Math.random() * (canvas.width - 120),
+        y: -20,
+        radius: 10,
+        pulse: Math.random() * Math.PI * 2
+      });
+    }
+
+    function createExplosion(x, y, color) {
+      for (let i = 0; i < 18; i++) {
+        particles.push({
+          x: x,
+          y: y,
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.5) * 8,
+          life: 1,
+          color: color,
+          size: Math.random() * 4 + 2
+        });
+      }
+    }
+
+    function update() {
+      frame++;
+
+      // Movimento do jogador
+      if (keys['arrowleft'] || keys['a'] || touchLeft) {
+        player.x -= player.speed;
+      }
+      if (keys['arrowright'] || keys['d'] || touchRight) {
+        player.x += player.speed;
+      }
+      player.x = Math.max(25, Math.min(canvas.width - 25, player.x));
+
+      // Spawn
+      if (frame % Math.max(25, 55 - Math.floor(speed * 3)) === 0) {
+        spawnObstacle();
+      }
+      if (frame % 90 === 0) {
+        spawnOrb();
+      }
+
+      // Atualizar obstáculos
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        const o = obstacles[i];
+        o.y += speed;
+        o.rotation += o.rotSpeed;
+
+        // Colisão com jogador
+        const dx = o.x - player.x;
+        const dy = o.y - player.y;
+        if (Math.abs(dx) < (o.size / 2 + 18) && Math.abs(dy) < (o.size / 2 + 14)) {
+          createExplosion(player.x, player.y, '#ff2a6d');
+          gameOver();
+          return;
+        }
+
+        if (o.y > canvas.height + 50) {
+          obstacles.splice(i, 1);
+          score += 5;
+          scoreEl.textContent = score;
+        }
+      }
+
+      // Atualizar orbs
+      for (let i = orbs.length - 1; i >= 0; i--) {
+        const orb = orbs[i];
+        orb.y += speed * 0.85;
+        orb.pulse += 0.12;
+
+        const dx = orb.x - player.x;
+        const dy = orb.y - player.y;
+        if (Math.sqrt(dx * dx + dy * dy) < 30) {
+          createExplosion(orb.x, orb.y, '#05d9e8');
+          score += 50;
+          scoreEl.textContent = score;
+          orbs.splice(i, 1);
+          // Pequeno boost de velocidade
+          speed = Math.min(speed + 0.15, 14);
+        } else if (orb.y > canvas.height + 30) {
+          orbs.splice(i, 1);
+        }
+      }
+
+      // Partículas
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.025;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      // Estrelas de fundo
+      stars.forEach(s => {
+        s.y += s.speed * (speed / 4);
+        if (s.y > canvas.height) {
+          s.y = 0;
+          s.x = Math.random() * canvas.width;
+        }
+      });
+
+      // Aumentar velocidade gradualmente
+      if (frame % 180 === 0) {
+        speed = Math.min(speed + 0.25, 14);
+      }
+    }
+
+    function draw() {
+      // Fundo
+      ctx.fillStyle = '#050510';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Estrelas
+      stars.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(180, 220, 255, ${0.3 + s.size * 0.2})`;
+        ctx.fill();
+      });
+
+      // Linhas do túnel (efeito de profundidade)
+      ctx.strokeStyle = 'rgba(5, 217, 232, 0.08)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 6; i++) {
+        const x = (canvas.width / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+
+      // Orbs
+      orbs.forEach(orb => {
+        const pulseSize = orb.radius + Math.sin(orb.pulse) * 3;
+        // Glow
+        const gradient = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, pulseSize * 2.5);
+        gradient.addColorStop(0, 'rgba(5, 217, 232, 0.8)');
+        gradient.addColorStop(0.5, 'rgba(5, 217, 232, 0.2)');
+        gradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(orb.x, orb.y, pulseSize * 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(orb.x, orb.y, pulseSize, 0, Math.PI * 2);
+        ctx.fillStyle = '#05d9e8';
+        ctx.fill();
+      });
+
+      // Obstáculos
+      obstacles.forEach(o => {
+        ctx.save();
+        ctx.translate(o.x, o.y);
+        ctx.rotate(o.rotation);
+
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#ff2a6d';
+
+        if (o.type === 'rect') {
+          ctx.fillStyle = '#ff2a6d';
+          ctx.fillRect(-o.size / 2, -o.size / 2, o.size, o.size);
+          ctx.strokeStyle = '#ff6b9d';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(-o.size / 2, -o.size / 2, o.size, o.size);
+        } else if (o.type === 'diamond') {
+          ctx.beginPath();
+          ctx.moveTo(0, -o.size / 2);
+          ctx.lineTo(o.size / 2, 0);
+          ctx.lineTo(0, o.size / 2);
+          ctx.lineTo(-o.size / 2, 0);
+          ctx.closePath();
+          ctx.fillStyle = '#d300c5';
+          ctx.fill();
+          ctx.strokeStyle = '#ff66ef';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(0, -o.size / 2);
+          ctx.lineTo(o.size / 2, o.size / 2);
+          ctx.lineTo(-o.size / 2, o.size / 2);
+          ctx.closePath();
+          ctx.fillStyle = '#ff6b35';
+          ctx.fill();
+          ctx.strokeStyle = '#ffaa70';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        ctx.shadowBlur = 0;
+        ctx.restore();
+      });
+
+      // Partículas
+      particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+
+      // Nave do jogador
+      ctx.save();
+      ctx.translate(player.x, player.y);
+
+      // Glow da nave
+      const shipGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, 40);
+      shipGlow.addColorStop(0, 'rgba(5, 217, 232, 0.4)');
+      shipGlow.addColorStop(1, 'transparent');
+      ctx.fillStyle = shipGlow;
+      ctx.beginPath();
+      ctx.arc(0, 0, 40, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Corpo da nave
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(16, 14);
+      ctx.lineTo(6, 8);
+      ctx.lineTo(-6, 8);
+      ctx.lineTo(-16, 14);
+      ctx.closePath();
+      ctx.fillStyle = '#05d9e8';
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Motor (propulsão)
+      const enginePulse = 4 + Math.sin(frame * 0.3) * 3;
+      ctx.beginPath();
+      ctx.moveTo(-5, 10);
+      ctx.lineTo(0, 10 + enginePulse);
+      ctx.lineTo(5, 10);
+      ctx.fillStyle = '#ff2a6d';
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function gameOver() {
+      gameRunning = false;
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('neonDriftBest', bestScore);
+        bestEl.textContent = bestScore;
+      }
+      finalScoreEl.textContent = score;
+      overlay.style.display = 'flex';
+    }
+
+    function loop() {
+      if (!gameRunning) return;
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    // Inicializar estrelas mesmo antes de jogar
+    createStars();
+  </script>
+</body>
+</html>
